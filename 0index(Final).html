@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💜 Nosso Cantinho 💜</title>
+<style>
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #f9a8d4, #c084fc);
+  color: white;
+  text-align: center;
+  overflow-x: hidden;
+}
+h1 {
+  font-size: 2.5rem;
+  margin-top: 2rem;
+  text-shadow: 0 3px 8px rgba(0,0,0,0.3);
+}
+#contador {
+  font-size: 1.1rem;
+  background: rgba(255,255,255,0.2);
+  display: inline-block;
+  padding: 10px 25px;
+  border-radius: 12px;
+  margin: 10px 0 30px 0;
+}
+
+.carousel-container {
+  position: relative;
+  overflow: hidden;
+  width: 90%;
+  max-width: 700px;
+  margin: 0 auto 30px auto;
+}
+.carousel-track {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+  gap: 20px;
+}
+.carousel-track img {
+  width: 200px;
+  height: 200px;
+  border-radius: 15px;
+  object-fit: cover;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  animation: float 3s ease-in-out infinite alternate;
+}
+.carousel-track img.active {
+  transform: scale(1.1);
+  opacity: 1;
+}
+.carousel-track img:not(.active) {
+  opacity: 0.6;
+  transform: scale(0.9);
+}
+
+@keyframes float {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-10px); }
+}
+
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  color: #c026d3;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+  font-size: 1.3rem;
+}
+.carousel-btn:hover {
+  background: #f0abfc;
+  color: white;
+}
+#prev { left: -20px; }
+#next { right: -20px; }
+
+button.music-btn {
+  background: white;
+  color: #c026d3;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: bold;
+  margin: 10px;
+  transition: 0.3s;
+}
+button.music-btn:hover {
+  background: #f0abfc;
+  color: white;
+}
+
+footer {
+  margin-top: 40px;
+  opacity: 0.8;
+}
+</style>
+</head>
+<body>
+
+<h1>💜 Nosso Cantinho 💜</h1>
+<div id="contador"></div>
+
+<div class="carousel-container">
+  <button class="carousel-btn" id="prev">⟨</button>
+  <div class="carousel-track" id="carousel-track"></div>
+  <button class="carousel-btn" id="next">⟩</button>
+</div>
+
+<div>
+  <button id="tocar" class="music-btn">🔇 Tocar Música</button>
+  <button id="proxima" class="music-btn">⏭ Próxima Música</button>
+</div>
+
+<footer>Para nunca esquecemos o poder da Babie. E do Patriarcado</footer>
+
+<script>
+const REPO_API = "https://api.github.com/repos/luanvictor480/Teste-site/contents/";
+const track = document.getElementById("carousel-track");
+let imagens = [];
+let musicas = [];
+let audio = new Audio();
+let tocando = false;
+let indexFoto = 0;
+let indexMusica = 0;
+let autoplayInterval;
+
+// ===== Carregar arquivos do GitHub =====
+async function carregarArquivos() {
+  const res = await fetch(REPO_API);
+  const data = await res.json();
+  imagens = data.filter(f => f.name.match(/\.(jpg|jpeg|png)$/i)).map(f => f.download_url);
+  musicas = data.filter(f => f.name.match(/\.mp3$/i)).map(f => f.download_url);
+  montarCarrossel();
+  iniciarAutoplay();
+}
+
+// ===== Montar Carrossel Infinito =====
+function montarCarrossel() {
+  track.innerHTML = "";
+  const total = imagens.length;
+  if(total>0){
+    // clonar todas as imagens à esquerda
+    imagens.forEach(url=>{
+      const img = document.createElement("img");
+      img.src = url;
+      track.appendChild(img);
+    });
+    // imagens reais
+    imagens.forEach(url=>{
+      const img = document.createElement("img");
+      img.src = url;
+      track.appendChild(img);
+    });
+    // clonar todas as imagens à direita
+    imagens.forEach(url=>{
+      const img = document.createElement("img");
+      img.src = url;
+      track.appendChild(img);
+    });
+    indexFoto = total; // começa no bloco do meio
+  }
+  atualizarCarrossel(true);
+}
+
+// ===== Atualizar carrossel =====
+function atualizarCarrossel(init=false){
+  const imgs = document.querySelectorAll("#carousel-track img");
+  imgs.forEach(img=>img.classList.remove("active"));
+
+  const total = imagens.length;
+  let centerIndex = indexFoto;
+  let prev = centerIndex-1;
+  let next = centerIndex+1;
+
+  imgs[prev].classList.add("active");
+  imgs[centerIndex].classList.add("active");
+  imgs[next].classList.add("active");
+
+  const deslocamento = centerIndex * 220 - 220;
+  if(init){
+    track.style.transition="none";
+    track.style.transform=`translateX(-${deslocamento}px)`;
+    setTimeout(()=>track.style.transition="transform 0.5s ease-in-out",50);
+  } else {
+    track.style.transform=`translateX(-${deslocamento}px)`;
+  }
+}
+
+// ===== Navegação do carrossel =====
+document.getElementById("next").addEventListener("click",avancarCarrossel);
+document.getElementById("prev").addEventListener("click",recuarCarrossel);
+
+function avancarCarrossel(){
+  const total = imagens.length;
+  indexFoto++;
+  atualizarCarrossel();
+  if(indexFoto >= 2*total){
+    setTimeout(()=>{
+      track.style.transition="none";
+      indexFoto = total;
+      atualizarCarrossel(true);
+      setTimeout(()=>track.style.transition="transform 0.5s ease-in-out",50);
+    },500);
+  }
+}
+
+function recuarCarrossel(){
+  const total = imagens.length;
+  indexFoto--;
+  atualizarCarrossel();
+  if(indexFoto < total){
+    setTimeout(()=>{
+      track.style.transition="none";
+      indexFoto = total + (indexFoto%total);
+      atualizarCarrossel(true);
+      setTimeout(()=>track.style.transition="transform 0.5s ease-in-out",50);
+    },500);
+  }
+}
+
+// ===== Autoplay carrossel =====
+function iniciarAutoplay(){
+  clearInterval(autoplayInterval);
+  autoplayInterval = setInterval(avancarCarrossel,3000);
+}
+
+// ===== Música =====
+function tocarMusica() {
+  if(musicas.length===0) return;
+  if(!tocando){
+    audio.src = musicas[indexMusica];
+    audio.play();
+    tocando=true;
+    document.getElementById("tocar").textContent="🔊 Pausar Música";
+  } else {
+    audio.pause();
+    tocando=false;
+    document.getElementById("tocar").textContent="🔇 Tocar Música";
+  }
+}
+
+function proximaMusica(){
+  if(musicas.length===0) return;
+  indexMusica = (indexMusica+1) % musicas.length;
+  audio.src = musicas[indexMusica];
+  if(tocando) audio.play();
+}
+
+audio.addEventListener("ended",proximaMusica);
+
+document.getElementById("tocar").addEventListener("click",tocarMusica);
+document.getElementById("proxima").addEventListener("click",proximaMusica);
+
+// ===== Contador =====
+const dataInicio = new Date("2023-07-20T20:00:00");
+const contador = document.getElementById("contador");
+function atualizarContador() {
+  const agora = new Date();
+  const diff = agora - dataInicio;
+  const anos = Math.floor(diff / (1000*60*60*24*365));
+  const meses = Math.floor((diff % (1000*60*60*24*365)) / (1000*60*60*24*30));
+  const dias = Math.floor((diff % (1000*60*60*24*30)) / (1000*60*60*24));
+  const horas = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+  const minutos = Math.floor((diff % (1000*60*60)) / (1000*60));
+  contador.textContent = `${anos} anos, ${meses} meses, ${dias} dias, ${horas} horas e ${minutos} minutos juntos 💕`;
+}
+atualizarContador();
+setInterval(atualizarContador,60000);
+
+carregarArquivos();
+</script>
+
+</body>
+</html>

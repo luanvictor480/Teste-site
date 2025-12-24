@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💜 Nosso Cantinho 💜</title>
+
+<style>
+/* ===== FUNDO NATALINO ===== */
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  color: white;
+  text-align: center;
+  overflow-x: hidden;
+
+  background:
+    radial-gradient(circle at top left, rgba(255,255,255,0.12), transparent 40%),
+    radial-gradient(circle at bottom right, rgba(255,255,255,0.08), transparent 40%),
+    linear-gradient(135deg, #5b0f2e, #8e1458, #c2185b, #7b1fa2);
+
+  background-attachment: fixed;
+}
+
+/* ===== TÍTULO ===== */
+h1 {
+  font-size: 2.5rem;
+  margin-top: 2rem;
+  text-shadow: 0 3px 10px rgba(0,0,0,0.4);
+}
+
+/* ===== CONTADOR ===== */
+#contador {
+  font-size: 1.1rem;
+  background: rgba(255,255,255,0.18);
+  display: inline-block;
+  padding: 10px 25px;
+  border-radius: 12px;
+  margin: 10px 0 30px;
+  backdrop-filter: blur(6px);
+}
+
+/* ===== CARROSSEL ===== */
+.carousel-container {
+  position: relative;
+  overflow: hidden;
+  width: 90%;
+  max-width: 700px;
+  margin: 0 auto 30px;
+}
+
+.carousel-track {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+  gap: 20px;
+}
+
+.carousel-track img {
+  width: 200px;
+  height: 200px;
+  border-radius: 15px;
+  object-fit: cover;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  animation: float 4s ease-in-out infinite alternate;
+}
+
+.carousel-track img.active {
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+.carousel-track img:not(.active) {
+  opacity: 0.6;
+  transform: scale(0.9);
+}
+
+@keyframes float {
+  from { transform: translateY(0); }
+  to { transform: translateY(-12px); }
+}
+
+/* ===== BOTÕES ===== */
+.carousel-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: white;
+  color: #c026d3;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  cursor: pointer;
+  font-size: 1.3rem;
+}
+
+#prev { left: -20px; }
+#next { right: -20px; }
+
+button.music-btn {
+  background: white;
+  color: #c026d3;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: bold;
+  margin: 10px;
+  transition: 0.3s;
+}
+
+button.music-btn:hover {
+  background: #f0abfc;
+  color: white;
+}
+
+footer {
+  margin-top: 40px;
+  opacity: 0.85;
+}
+
+/* ===== 🎄 EFEITOS DE NATAL ===== */
+.christmas-fall {
+  position: fixed;
+  top: -30px;
+  pointer-events: none;
+  z-index: 9999;
+  animation: fall linear forwards;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(110vh) rotate(360deg);
+  }
+}
+
+.burst {
+  position: fixed;
+  font-size: 14px;
+  pointer-events: none;
+  animation: burst 0.8s ease-out forwards;
+}
+
+@keyframes burst {
+  to {
+    transform: translate(var(--x), var(--y));
+    opacity: 0;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<h1>💜 Nosso Cantinho 💜</h1>
+<div id="contador"></div>
+
+<div class="carousel-container">
+  <button class="carousel-btn" id="prev">⟨</button>
+  <div class="carousel-track" id="carousel-track"></div>
+  <button class="carousel-btn" id="next">⟩</button>
+</div>
+
+<div>
+  <button id="tocar" class="music-btn">🔇 Tocar Música</button>
+  <button id="proxima" class="music-btn">⏭ Próxima Música</button>
+</div>
+
+<footer>Para nunca esquecermos o poder da Babie. E do Patriarcado</footer>
+
+<script>
+/* ===== CONTADOR ===== */
+const dataInicio = new Date("2023-07-20T20:00:00");
+const contador = document.getElementById("contador");
+
+function atualizarContador() {
+  const agora = new Date();
+  const diff = agora - dataInicio;
+  const dias = Math.floor(diff / (1000*60*60*24));
+  const horas = Math.floor((diff / (1000*60*60)) % 24);
+  const minutos = Math.floor((diff / (1000*60)) % 60);
+  contador.textContent = `${dias} dias, ${horas} horas e ${minutos} minutos juntos 💕`;
+}
+atualizarContador();
+setInterval(atualizarContador, 60000);
+
+/* ===== 🎄 EMOJIS DE NATAL CAINDO ===== */
+const natalEmojis = ["❄️","❅","❆","🎄","🎅","⛄","⭐","💖"];
+
+setInterval(() => {
+  const el = document.createElement("div");
+  el.className = "christmas-fall";
+  el.textContent = natalEmojis[Math.floor(Math.random() * natalEmojis.length)];
+  el.style.left = Math.random() * window.innerWidth + "px";
+  el.style.fontSize = (Math.random() * 18 + 14) + "px";
+  el.style.animationDuration = (Math.random() * 6 + 6) + "s";
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 15000);
+}, 350);
+
+/* ===== INTERAÇÃO COM TOQUE / MOUSE ===== */
+function explosao(x, y) {
+  for (let i = 0; i < 6; i++) {
+    const b = document.createElement("div");
+    b.className = "burst";
+    b.textContent = "✨";
+    b.style.left = x + "px";
+    b.style.top = y + "px";
+    b.style.setProperty("--x", (Math.random()-0.5)*80 + "px");
+    b.style.setProperty("--y", (Math.random()-0.5)*80 + "px");
+    document.body.appendChild(b);
+    setTimeout(() => b.remove(), 800);
+  }
+}
+
+document.addEventListener("mousemove", e => explosao(e.clientX, e.clientY));
+document.addEventListener("touchstart", e => {
+  const t = e.touches[0];
+  explosao(t.clientX, t.clientY);
+}, { passive: true });
+</script>
+
+</body>
+</html>

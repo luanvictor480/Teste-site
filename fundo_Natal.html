@@ -4,30 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>💜 Nosso Cantinho 💜</title>
-
 <style>
-/* ===== FUNDO MELHORADO (NATALINO) ===== */
 body {
   margin: 0;
   font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #f9a8d4, #c084fc);
   color: white;
   text-align: center;
   overflow-x: hidden;
-
-  background:
-    radial-gradient(circle at top left, rgba(255,255,255,0.15), transparent 40%),
-    radial-gradient(circle at bottom right, rgba(255,255,255,0.1), transparent 40%),
-    linear-gradient(135deg, #5b0f2e, #8e1458, #c2185b, #7b1fa2);
-
-  background-attachment: fixed;
 }
-
 h1 {
   font-size: 2.5rem;
   margin-top: 2rem;
   text-shadow: 0 3px 8px rgba(0,0,0,0.3);
 }
-
 #contador {
   font-size: 1.1rem;
   background: rgba(255,255,255,0.2);
@@ -37,7 +27,6 @@ h1 {
   margin: 10px 0 30px 0;
 }
 
-/* ===== CARROSSEL (INALTERADO) ===== */
 .carousel-container {
   position: relative;
   overflow: hidden;
@@ -114,38 +103,8 @@ footer {
   margin-top: 40px;
   opacity: 0.8;
 }
-
-/* ===== EFEITO DE NATAL ===== */
-.christmas-fall {
-  position: fixed;
-  top: -30px;
-  pointer-events: none;
-  z-index: 9999;
-  animation: fall linear forwards;
-}
-
-@keyframes fall {
-  to {
-    transform: translateY(110vh) rotate(360deg);
-  }
-}
-
-.burst {
-  position: fixed;
-  pointer-events: none;
-  animation: burst 0.8s ease-out forwards;
-  z-index: 10000;
-}
-
-@keyframes burst {
-  to {
-    transform: translate(var(--x), var(--y));
-    opacity: 0;
-  }
-}
 </style>
 </head>
-
 <body>
 
 <h1>💜 Nosso Cantinho 💜</h1>
@@ -165,7 +124,6 @@ footer {
 <footer>Para nunca esquecemos o poder da Babie. E do Patriarcado</footer>
 
 <script>
-/* ===== SEU JS ORIGINAL (INALTERADO) ===== */
 const REPO_API = "https://api.github.com/repos/luanvictor480/Teste-site/contents/";
 const track = document.getElementById("carousel-track");
 let imagens = [];
@@ -176,41 +134,150 @@ let indexFoto = 0;
 let indexMusica = 0;
 let autoplayInterval;
 
-/* ... TODO SEU CÓDIGO EXISTENTE CONTINUA IGUAL ... */
+// ===== Carregar arquivos do GitHub =====
+async function carregarArquivos() {
+  const res = await fetch(REPO_API);
+  const data = await res.json();
+  imagens = data.filter(f => f.name.match(/\.(jpg|jpeg|png)$/i)).map(f => f.download_url);
+  musicas = data.filter(f => f.name.match(/\.mp3$/i)).map(f => f.download_url);
+  montarCarrossel();
+  iniciarAutoplay();
+}
 
-/* ===== EFEITO DE NATAL (ADICIONADO) ===== */
-const natalEmojis = ["❄️","❅","❆","🎄","🎅","⛄","⭐","💖"];
+// ===== Montar Carrossel Infinito =====
+function montarCarrossel() {
+  track.innerHTML = "";
+  const total = imagens.length;
+  if(total>0){
+    // clonar todas as imagens à esquerda
+    imagens.forEach(url=>{
+      const img = document.createElement("img");
+      img.src = url;
+      track.appendChild(img);
+    });
+    // imagens reais
+    imagens.forEach(url=>{
+      const img = document.createElement("img");
+      img.src = url;
+      track.appendChild(img);
+    });
+    // clonar todas as imagens à direita
+    imagens.forEach(url=>{
+      const img = document.createElement("img");
+      img.src = url;
+      track.appendChild(img);
+    });
+    indexFoto = total; // começa no bloco do meio
+  }
+  atualizarCarrossel(true);
+}
 
-setInterval(() => {
-  const el = document.createElement("div");
-  el.className = "christmas-fall";
-  el.textContent = natalEmojis[Math.floor(Math.random() * natalEmojis.length)];
-  el.style.left = Math.random() * window.innerWidth + "px";
-  el.style.fontSize = (Math.random() * 18 + 14) + "px";
-  el.style.animationDuration = (Math.random() * 6 + 6) + "s";
-  document.body.appendChild(el);
-  setTimeout(() => el.remove(), 15000);
-}, 350);
+// ===== Atualizar carrossel =====
+function atualizarCarrossel(init=false){
+  const imgs = document.querySelectorAll("#carousel-track img");
+  imgs.forEach(img=>img.classList.remove("active"));
 
-function explosaoNatal(x, y) {
-  for (let i = 0; i < 6; i++) {
-    const b = document.createElement("div");
-    b.className = "burst";
-    b.textContent = "✨";
-    b.style.left = x + "px";
-    b.style.top = y + "px";
-    b.style.setProperty("--x", (Math.random()-0.5)*80 + "px");
-    b.style.setProperty("--y", (Math.random()-0.5)*80 + "px");
-    document.body.appendChild(b);
-    setTimeout(() => b.remove(), 800);
+  const total = imagens.length;
+  let centerIndex = indexFoto;
+  let prev = centerIndex-1;
+  let next = centerIndex+1;
+
+  imgs[prev].classList.add("active");
+  imgs[centerIndex].classList.add("active");
+  imgs[next].classList.add("active");
+
+  const deslocamento = centerIndex * 220 - 220;
+  if(init){
+    track.style.transition="none";
+    track.style.transform=`translateX(-${deslocamento}px)`;
+    setTimeout(()=>track.style.transition="transform 0.5s ease-in-out",50);
+  } else {
+    track.style.transform=`translateX(-${deslocamento}px)`;
   }
 }
 
-document.addEventListener("mousemove", e => explosaoNatal(e.clientX, e.clientY));
-document.addEventListener("touchstart", e => {
-  const t = e.touches[0];
-  explosaoNatal(t.clientX, t.clientY);
-}, { passive: true });
+// ===== Navegação do carrossel =====
+document.getElementById("next").addEventListener("click",avancarCarrossel);
+document.getElementById("prev").addEventListener("click",recuarCarrossel);
+
+function avancarCarrossel(){
+  const total = imagens.length;
+  indexFoto++;
+  atualizarCarrossel();
+  if(indexFoto >= 2*total){
+    setTimeout(()=>{
+      track.style.transition="none";
+      indexFoto = total;
+      atualizarCarrossel(true);
+      setTimeout(()=>track.style.transition="transform 0.5s ease-in-out",50);
+    },500);
+  }
+}
+
+function recuarCarrossel(){
+  const total = imagens.length;
+  indexFoto--;
+  atualizarCarrossel();
+  if(indexFoto < total){
+    setTimeout(()=>{
+      track.style.transition="none";
+      indexFoto = total + (indexFoto%total);
+      atualizarCarrossel(true);
+      setTimeout(()=>track.style.transition="transform 0.5s ease-in-out",50);
+    },500);
+  }
+}
+
+// ===== Autoplay carrossel =====
+function iniciarAutoplay(){
+  clearInterval(autoplayInterval);
+  autoplayInterval = setInterval(avancarCarrossel,3000);
+}
+
+// ===== Música =====
+function tocarMusica() {
+  if(musicas.length===0) return;
+  if(!tocando){
+    audio.src = musicas[indexMusica];
+    audio.play();
+    tocando=true;
+    document.getElementById("tocar").textContent="🔊 Pausar Música";
+  } else {
+    audio.pause();
+    tocando=false;
+    document.getElementById("tocar").textContent="🔇 Tocar Música";
+  }
+}
+
+function proximaMusica(){
+  if(musicas.length===0) return;
+  indexMusica = (indexMusica+1) % musicas.length;
+  audio.src = musicas[indexMusica];
+  if(tocando) audio.play();
+}
+
+audio.addEventListener("ended",proximaMusica);
+
+document.getElementById("tocar").addEventListener("click",tocarMusica);
+document.getElementById("proxima").addEventListener("click",proximaMusica);
+
+// ===== Contador =====
+const dataInicio = new Date("2023-07-20T20:00:00");
+const contador = document.getElementById("contador");
+function atualizarContador() {
+  const agora = new Date();
+  const diff = agora - dataInicio;
+  const anos = Math.floor(diff / (1000*60*60*24*365));
+  const meses = Math.floor((diff % (1000*60*60*24*365)) / (1000*60*60*24*30));
+  const dias = Math.floor((diff % (1000*60*60*24*30)) / (1000*60*60*24));
+  const horas = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+  const minutos = Math.floor((diff % (1000*60*60)) / (1000*60));
+  contador.textContent = `${anos} anos, ${meses} meses, ${dias} dias, ${horas} horas e ${minutos} minutos juntos 💕`;
+}
+atualizarContador();
+setInterval(atualizarContador,60000);
+
+carregarArquivos();
 </script>
 
 </body>
